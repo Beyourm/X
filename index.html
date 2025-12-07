@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مولّد رابط الكورس</title>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+/* --- 🛠️ الستايلات الأساسية والمحدثة --- */
+body {
+  font-family: "Tajawal", sans-serif;
+  direction: rtl;
+  margin: 25px;
+  background: #f7f7f7;
+  transition: background 0.3s;
+}
+.container {
+  max-width: 400px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box; 
+  transition: border-color 0.3s, background-color 0.3s;
+}
+input:focus {
+    border-color: #2196f3;
+    outline: none;
+}
+button {
+  background: #2196f3;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+button:hover:not(:disabled) {
+    background: #1976d2;
+}
+button:disabled {
+    background: #999;
+    cursor: not-allowed;
+}
+
+/* زر QR */
+#qrBtn {
+    background: #ff9800;
+    margin-top: 10px;
+}
+#qrBtn:hover:not(:disabled) {
+    background: #fb8c00;
+}
+
+.secondary-btn {
+    background: #f44336;
+    width: auto;
+    padding: 6px 15px;
+    margin-right: 5px;
+    font-size: 14px;
+}
+.secondary-btn:hover:not(:disabled) {
+    background: #d32f2f;
+}
+#result {
+  margin-top: 15px;
+  padding: 12px;
+  background: #e3f2fd;
+  border-radius: 8px;
+  word-break: break-all;
+  min-height: 30px; 
+}
+.result-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+#copyBtn {
+    width: auto;
+    padding: 8px 15px;
+    background: #4caf50;
+    margin: 0;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+#copyBtn:hover:not(:disabled) {
+    background: #388e3c;
+}
+
+.hidden {
+  display: none;
+}
+.marketer-info {
+    font-size: 14px;
+    color: #444;
+    text-align: center;
+    margin-bottom: 15px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #fff8e1;
+    border: 1px dashed #ffecb3;
+}
+#statusMessage {
+    margin-top: 15px;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    min-height: 30px;
+}
+.copy-success {
+    background: #d4edda !important;
+    color: #155724;
+    font-weight: bold;
+    text-align: center;
+    animation: fadeout 3s forwards;
+}
+
+@keyframes fadeout {
+    0% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; display: none; }
+}
+
+/* --- 🔄 Loader CSS --- */
+.loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #2196f3;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-left: 10px;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* --- 🌙 دعم الوضع الليلي --- */
+@media (prefers-color-scheme: dark) {
+  body { 
+    background: #121212; 
+    color: #e0e0e0; 
+  }
+  .container { 
+    background: #1e1e1e; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+  input, button {
+    border-color: #333;
+    background-color: #2c2c2c;
+    color: #e0e0e0;
+  }
+  input:focus {
+    border-color: #64b5f6;
+  }
+  .marketer-info {
+    background: #333333;
+    border: 1px dashed #555;
+    color: #ccc;
+  }
+  #result {
+    background: #334e68;
+  }
+  .copy-success {
+    background: #3e7040 !important;
+    color: #c8e6c9;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div id="marketerSection">
+    <h3>أدخل معرف المسوّق</h3>
+    <input type="text" id="marketerId" maxlength="8" placeholder="مثال: ABCDEF12">
+    <button onclick="saveMarketerId()">حفظ المعرف</button>
+  </div>
+
+  <div id="statusMessage"></div>
+
+  <div id="mainSection" class="hidden">
+    <h2>مولّد رابط الكورس</h2>
+
+    <div class="marketer-info">
+        معرّف المسوّق الحالي: <span id="currentMarketerId"></span>
+        <button class="secondary-btn" onclick="resetMarketerId()">تغيير المعرف</button>
+    </div>
+
+    <label>اسم الكورس (بحد أقصى 50 حرف):</label>
+    <input type="text" id="course" maxlength="50" placeholder="اكتب اسم الكورس هنا">
+
+    <button id="generateBtn" disabled onclick="generateLink()">توليد الرابط ونسخه</button>
+
+    <div id="result"></div>
+  </div>
+
+</div>
+
+<script>
+
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxQ-PSGLZ6M4qf73B3Fh0Hn7-8Bxn7Wm_DMxhee_-hDDFHAaoKTYxkv_EQlzvqoNXxuuw/exec"; 
+const FALLBACK_URL = "https://skillia.netlify.app/mt";
+const LAST_COURSE_KEY = "last_course_name";
+
+let baseUrl = null; 
+
+const resultDiv = document.getElementById("result");
+const courseInput = document.getElementById("course");
+const marketerIdInput = document.getElementById("marketerId");
+const mainSection = document.getElementById("mainSection");
+const statusMessageDiv = document.getElementById("statusMessage");
+const generateBtn = document.getElementById("generateBtn");
+
+// دالة مساعدة لطباعة الرسائل مع أيقونات
+const showStatus = (msg, type = 'info') => {
+    let icon;
+    let color;
+    let loader = '';
+
+    switch (type) {
+        case 'success': icon = '✅'; color = '#4caf50'; break;
+        case 'error': icon = '❌'; color = '#d32f2f'; break;
+        case 'warning': icon = '⚠️'; color = '#ff9800'; break;
+        case 'loading': icon = '🔄'; color = '#2196f3'; loader = '<div class="loader"></div>'; break;
+        default: icon = ''; color = '#444'; break;
+    }
+    
+    statusMessageDiv.innerHTML = `<span style="color:${color};">${icon} ${msg} ${loader}</span>`;
+    if (type !== 'loading') {
+        // إذا لم يكن تحميل، يتم مسح الرسالة بعد 3 ثوانٍ
+        setTimeout(() => statusMessageDiv.innerHTML = "", 3000);
+    }
+};
+
+// تحديث عرض المعرف
+function updateMarketerDisplay(id) {
+    document.getElementById("currentMarketerId").textContent = id;
+}
+
+// تحديث حالة زر التوليد
+function updateGenerateButtonState() {
+    const courseValue = courseInput.value.trim();
+    // الزر نشط إذا تم تحميل الرابط الأساسي وتم إدخال اسم الكورس
+    generateBtn.disabled = !(baseUrl && courseValue);
+}
+
+// منع لصق نص غير مطابق للشروط
+marketerIdInput.addEventListener("paste", (e) => {
+    const text = e.clipboardData.getData("text").trim().toUpperCase();
+    if (!/^[A-Z0-9]+$/.test(text)) {
+        e.preventDefault();
+        showStatus("⚠️ يُسمح فقط بالأحرف الإنجليزية الكبيرة والأرقام في المعرف.", 'warning');
+    }
+});
+
+// ❌ تم حذف معالج حدث 'input' من هنا
+courseInput.addEventListener("input", updateGenerateButtonState);
+
+
+// دالة جلب رابط الأساس من Google Sheet عبر Apps Script
+function fetchBaseUrl() {
+  if (!APPS_SCRIPT_URL.includes("google.com/macros/s")) {
+     showStatus('❌ **خطأ**: يجب وضع رابط Apps Script المنشور في المتغير `APPS_SCRIPT_URL`.', 'error');
+     return;
+  }
+
+  showStatus("جارٍ تحميل الرابط الأساسي...", 'loading');
+
+  fetch(APPS_SCRIPT_URL)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      if (data.status === 'success' && data.baseUrl) {
+        baseUrl = data.baseUrl;
+        showStatus("✅ تم تحميل رابط الأساس بنجاح.", 'success');
+      } else {
+        throw new Error('فشل استرداد رابط الأساس: ' + data.message);
+      }
+    })
+    .catch(error => {
+      // الحماية من الأعطال: استخدام الرابط الافتراضي
+      baseUrl = FALLBACK_URL;  
+      console.error('Fetch error:', error);
+      showStatus("⚠️ فشل الاتصال. تم استخدام الرابط الافتراضي بنجاح.", 'warning');
+    })
+    .finally(() => {
+        mainSection.classList.remove("hidden");
+        
+        // استدعاء آخر كورس محفوظ
+        const lastCourse = localStorage.getItem(LAST_COURSE_KEY);
+        if (lastCourse) {
+            courseInput.value = lastCourse;
+        }
+
+        courseInput.focus();
+        updateGenerateButtonState(); // تحديث حالة الزر بعد تحميل baseUrl
+    });
+}
+
+
+// عند فتح الصفحة
+window.onload = function() {
+  const savedId = localStorage.getItem("marketer_id");
+
+  if (savedId) {
+    document.getElementById("marketerSection").classList.add("hidden");
+    updateMarketerDisplay(savedId);
+    fetchBaseUrl(); 
+  } else {
+    document.getElementById("marketerSection").classList.remove("hidden");
+    marketerIdInput.focus();
+  }
+};
+
+// مسح المعرف والعودة
+function resetMarketerId() {
+    if (confirm("هل أنت متأكد من رغبتك في تغيير معرّف المسوّق؟ سيؤدي هذا إلى إعادة تعيين إعداداتك.")) {
+        localStorage.removeItem("marketer_id");
+        localStorage.removeItem(LAST_COURSE_KEY);
+        document.getElementById("marketerSection").classList.remove("hidden");
+        mainSection.classList.add("hidden");
+        showStatus("");
+        marketerIdInput.value = "";
+        marketerIdInput.focus();
+        resultDiv.innerHTML = ""; 
+        baseUrl = null;
+        updateGenerateButtonState();
+    }
+}
+
+
+// حفظ معرف المسوق
+function saveMarketerId() {
+  const id = marketerIdInput.value.trim().toUpperCase();
+
+  const regex = /^[A-Z]{6}[0-9]{2}$/;
+
+  if (!regex.test(id)) {
+    alert("المعرف يجب أن يكون 6 حروف إنجليزية كبيرة + رقمين.\nمثال: ABCDEF12");
+    return;
+  }
+
+  localStorage.setItem("marketer_id", id);
+  updateMarketerDisplay(id);
+
+  document.getElementById("marketerSection").classList.add("hidden");
+  showStatus("✅ تم حفظ معرف المسوق بنجاح. الآن يتم جلب الرابط الأساسي...", 'success');
+  
+  fetchBaseUrl(); 
+}
+
+// توليد الرابط
+function generateLink() {
+  if (!baseUrl) {
+    showStatus("❌ الرجاء الانتظار حتى يتم تحميل رابط الأساس.", 'error');
+    return;
+  }
+  
+  const course = courseInput.value.trim();
+  const marketerId = localStorage.getItem("marketer_id");
+
+  if (!course) {
+    showStatus("⚠️ الرجاء كتابة اسم الكورس أولاً.", 'warning');
+    return;
+  }
+
+  if (!marketerId) {
+     showStatus("❌ المعرف غير موجود! الرجاء النقر على 'تغيير المعرف' وإدخاله مجدداً.", 'error');
+     return;
+  }
+
+  // حفظ آخر كورس
+  localStorage.setItem(LAST_COURSE_KEY, course);
+
+  // ⚠️ الآن يتم تضمين المسافات والرموز الأخرى كما هي، وستقوم دالة encodeURIComponent بمعالجتها لـ URL.
+// ⚠️ يتم ترميز المسافات فقط (%20)
+const encodedCourse = course.replace(/ /g, '%20');
+
+  const fullLink = `${baseUrl}?course=${encodedCourse}&marketer_id=${marketerId}`;
+
+  // عرض الرابط مع الأزرار الإضافية
+  resultDiv.innerHTML = `
+    <div style="font-size: 14px; margin-bottom: 5px;"><strong>الرابط النهائي:</strong></div>
+    <div class="result-content">
+        <button id="copyBtn" onclick="copyLink('${fullLink}')">
+            <i class="material-icons" style="font-size: 16px; margin-right: 5px;">content_copy</i>
+            نسخ الرابط
+        </button>
+        <button id="qrBtn" onclick="generateQrCode('${fullLink}')">
+            <i class="material-icons" style="font-size: 16px; margin-right: 5px;">qr_code</i>
+            QR Code
+        </button>
+    </div>
+    <span style="font-size: 13px; display: block; margin-top: 10px; word-break: break-all;">${fullLink}</span>
+  `;
+  resultDiv.classList.remove("copy-success");
+  
+  // النسخ التلقائي
+  navigator.clipboard.writeText(fullLink)
+    .then(() => {
+        resultDiv.classList.add("copy-success");
+        setTimeout(() => {
+             resultDiv.classList.remove("copy-success");
+        }, 3000); 
+    })
+    .catch(() => {
+        showStatus("⚠️ تعذر النسخ التلقائي. استخدم زر 'نسخ الرابط' يدوياً.", 'warning');
+    });
+}
+
+// دالة مساعدة لزر النسخ المنفصل
+function copyLink(link) {
+    navigator.clipboard.writeText(link)
+    .then(() => {
+        showStatus("✅ تم نسخ الرابط إلى الحافظة!", 'success');
+        const copyButton = document.getElementById("copyBtn");
+        copyButton.style.backgroundColor = '#388e3c';
+        setTimeout(() => copyButton.style.backgroundColor = '#4caf50', 500);
+    })
+    .catch(() => {
+        showStatus("❌ تعذر النسخ، حاول يدوياً.", 'error');
+    });
+}
+
+// دالة توليد الـ QR Code
+function generateQrCode(link) {
+    const qrApiUrl = `https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(link)}`;
+
+    const qrWindow = window.open("", "QR Code", "width=250,height=250");
+    if (qrWindow) {
+        qrWindow.document.write(`
+            <!DOCTYPE html>
+            <html dir="rtl">
+            <head><title>QR Code</title></head>
+            <body style="margin: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh;">
+                <img src="${qrApiUrl}" alt="QR Code" style="border: 1px solid #ccc; padding: 5px;">
+                <p style="font-family: Tajawal, sans-serif; font-size: 12px; margin-top: 10px;">امسح الكود ضوئياً</p>
+            </body>
+            </html>
+        `);
+        qrWindow.document.close();
+    } else {
+        showStatus("⚠️ الرجاء السماح بالنوافذ المنبثقة لعرض رمز QR.", 'warning');
+    }
+}
+</script>
+
+</body>
+</html>
